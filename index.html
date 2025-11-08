@@ -20,7 +20,7 @@
 <body>
   <div id="webstore">
     <!-- Navigation Bar -->
-     
+
     <nav>
       <div class="logo"><i class="fas fa-graduation-cap"></i> MyAcademia</div>
       <div class="nav-links">
@@ -39,7 +39,7 @@
         </button>
       </div>
     </nav>
-     <!-- Sign-in Required Modal -->
+    <!-- Sign-in Required Modal -->
     <!-- Vue-only Sign-in Required Modal -->
     <div v-if="showSigninModal" class="v-modal-root">
       <div class="v-backdrop" @click="closeSigninModal"></div>
@@ -185,11 +185,31 @@
             <option value="high">Above $100</option>
           </select>
         </div>
+        <!-- Sort By -->
+        <div class="col-md-4">
+          <label class="form-label mb-1">Sort by</label>
+          <select class="form-select" v-model="sortBy">
+            <option value="subject">Subject (A–Z)</option>
+            <option value="location">Location (A–Z)</option>
+            <option value="price">Price</option>
+            <option value="spaces">Spaces (Availability)</option>
+          </select>
+        </div>
+
+        <!-- Sort Order (works for each attribute) -->
+        <div class="col-md-4">
+          <label class="form-label mb-1">Order</label>
+          <select class="form-select" v-model="sortOrder">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </div>
+
       </div>
 
       <!-- Filtered Course List -->
       <div class="row">
-        <div v-for="course in filteredCourses" :key="course.id" class="col-md-6 mb-4">
+        <div v-for="course in finalCourses" :key="course.id" class="col-md-6 mb-4">
           <div class="course-card p-3 shadow-sm">
             <img :src="course.image" alt="Course Image" class="img-fluid mb-3" />
             <h2>{{ course.title }}</h2>
@@ -210,7 +230,7 @@
         </div>
 
         <!-- No results message -->
-        <p v-if="filteredCourses.length === 0" class="text-center text-muted">
+        <p v-if="finalCourses.length === 0" class="text-center text-muted">
           No courses match your search or filters.
         </p>
       </div>
@@ -297,90 +317,83 @@
           </button>
 
         </div>
+      </div>
+
+      <div v-if="checkoutStep==='form'">
+        <div class="card p-3 mb-3" style="max-width: 720px">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">First Name</label>
+              <input class="form-control" v-model.trim="credentials.firstName" disabled />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Last Name</label>
+              <input class="form-control" v-model.trim="credentials.lastName" disabled />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Address</label>
+              <input class="form-control" v-model.trim="order.address" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">City</label>
+              <input class="form-control" v-model.trim="order.city" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">State</label>
+              <select class="form-select" v-model="order.state">
+                <option disabled value="">Select State</option>
+                <option v-for="(label, key) in states" :value="key">
+                  {{ label }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Zip / Postal</label>
+              <input class="form-control" v-model.trim="order.zip" />
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="gift" v-model="order.gift" />
+                <label class="form-check-label" for="gift">Ship as gift?</label>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Shipping Method</label>
+              <div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="home" value="Home" v-model="order.method" />
+                  <label class="form-check-label" for="home">Home</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="business" value="Business" v-model="order.method" />
+                  <label class="form-check-label" for="business">Business</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <button class="btn btn-primary" @click="goToDetails">Place Order</button>
+            </div>
+          </div>
         </div>
-
-        <div v-if="checkoutStep==='form'">
-          <div class="card p-3 mb-3" style="max-width: 720px">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label">First Name</label>
-                <input class="form-control" v-model.trim="credentials.firstName" disabled />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Last Name</label>
-                <input class="form-control" v-model.trim="credentials.lastName" disabled />
-              </div>
-
-              <div class="col-12">
-                <label class="form-label">Address</label>
-                <input class="form-control" v-model.trim="order.address" />
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">City</label>
-                <input class="form-control" v-model.trim="order.city" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">State</label>
-                <select class="form-select" v-model="order.state">
-                  <option disabled value="">Select State</option>
-                  <option v-for="(label, key) in states" :value="key">
-                    {{ label }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Zip / Postal</label>
-                <input class="form-control" v-model.trim="order.zip" />
-              </div>
-
-              <div class="col-md-6 d-flex align-items-center">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="gift" v-model="order.gift" />
-                  <label class="form-check-label" for="gift">Ship as gift?</label>
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label class="form-label">Shipping Method</label>
-                <div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="home" value="Home" v-model="order.method" />
-                    <label class="form-check-label" for="home">Home</label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" id="business" value="Business"
-                      v-model="order.method" />
-                    <label class="form-check-label" for="business">Business</label>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12">
-                <button class="btn btn-primary"  @click="goToDetails">Place Order</button>
-              </div>
-            </div>
-          </div>
-          </div>
-          <div v-if="checkoutStep ==='confirmDetails'">
-              <h4>Order Information (live)</h4>
-            <div class="card p-3" style="max-width: 720px">
-              <p><strong>First Name:</strong> {{ order.firstName}}</p>
-              <p><strong>Last Name:</strong> {{ order.lastName }}</p>
-              <p><strong>Address:</strong> {{ order.address }}</p>
-              <p><strong>City:</strong> {{ order.city }}</p>
-              <p><strong>State:</strong> {{ order.state }}</p>
-              <p><strong>Zip/Postal Code:</strong> {{ order.zip }}</p>
-              <p><strong>Shipping Method:</strong> {{ order.method }}</p>
-              <p><strong>Gift:</strong> {{ order.gift ? 'Yes' : 'No' }}</p>
-            </div>
-
-          </div>
-
-         
-        
-
+      </div>
+      <div v-if="checkoutStep ==='confirmDetails'">
+        <h4>Order Information (live)</h4>
+        <div class="card p-3" style="max-width: 720px">
+          <p><strong>First Name:</strong> {{ order.firstName}}</p>
+          <p><strong>Last Name:</strong> {{ order.lastName }}</p>
+          <p><strong>Address:</strong> {{ order.address }}</p>
+          <p><strong>City:</strong> {{ order.city }}</p>
+          <p><strong>State:</strong> {{ order.state }}</p>
+          <p><strong>Zip/Postal Code:</strong> {{ order.zip }}</p>
+          <p><strong>Shipping Method:</strong> {{ order.method }}</p>
+          <p><strong>Gift:</strong> {{ order.gift ? 'Yes' : 'No' }}</p>
+        </div>
 
       </div>
 
@@ -388,277 +401,300 @@
 
 
 
+    </div>
 
-      <!-- Sign In Page -->
-      <div v-if="currentPage === 'signIn'">
-        <h1 class="text-center">Sign In</h1>
-        <p class="text-center">Welcome back!</p>
 
-        <div class="card shadow p-4" style="max-width: 500px; margin: auto">
-          <form @submit.prevent="signIn">
-            <div class="mb-3">
-              <label for="signinEmail" class="form-label">Email</label>
-              <input type="email" id="signinEmail" class="form-control" v-model="signinEmail" required />
-            </div>
 
-            <div class="mb-3">
-              <label for="signinPassword" class="form-label">Password</label>
-              <input type="password" id="signinPassword" class="form-control" v-model="signinPassword" required />
-            </div>
 
-            <button type="submit" class="btn btn-primary w-100" style="background-color: #00572b">
-              Sign In
-            </button>
-            <p>
+
+
+    <!-- Sign In Page -->
+    <div v-if="currentPage === 'signIn'">
+      <h1 class="text-center">Sign In</h1>
+      <p class="text-center">Welcome back!</p>
+
+      <div class="card shadow p-4" style="max-width: 500px; margin: auto">
+        <form @submit.prevent="signIn">
+          <div class="mb-3">
+            <label for="signinEmail" class="form-label">Email</label>
+            <input type="email" id="signinEmail" class="form-control" v-model="signinEmail" required />
+          </div>
+
+          <div class="mb-3">
+            <label for="signinPassword" class="form-label">Password</label>
+            <input type="password" id="signinPassword" class="form-control" v-model="signinPassword" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" style="background-color: #00572b">
+            Sign In
+          </button>
+          <p>
             Don't have an account?
             <a href="javascript:void(0)" @click="change('signUp')">Sign In</a>
           </p>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
+  </div>
 
-    <!-- Toast Notification Container -->
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
-      <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert"
-        aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body" id="toastMessage">
-            <!-- Message will be injected here -->
-          </div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-            aria-label="Close"></button>
+  <!-- Toast Notification Container -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
+    <div id="liveToast" class="toast align-items-center text-white bg-primary border-0" role="alert"
+      aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMessage">
+          <!-- Message will be injected here -->
         </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Close"></button>
       </div>
     </div>
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
-      <p class="mb-0">&copy; 2025 MyAcademia. All Rights Reserved.</p>
-    </footer>
-   
+  </div>
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <p class="mb-0">&copy; 2025 MyAcademia. All Rights Reserved.</p>
+  </footer>
 
 
 
-    <script>
-      let webstore = new Vue({
-        el: "#webstore",
-        data: {
-          message: "Hello Vue!",
-          currentPage: "checkoutPage",
-          courses: courses,
-          cart: [],
-          credentials: {
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-          },
-          signinEmail: "",
-          signinPassword: "",
-          order: {
-            firstName: "",
-            lastName: "",
-            address: "",
-            city: "",
-            state: "",
-            zip: "",
-            method: "Home",
-            gift: false,
-          },
-          states: {
-            CA: "California",
-            TX: "Texas",
-            NY: "New York",
-            FL: "Florida",
-            IL: "Illinois",
-          },
-          searchQuery: "",
-          selectedLocation: "",
-          selectedPrice: "",
-          checkoutStep: "summary",
-          isSignedIn: false,
-          pendingAdd: null,
-          showSigninModal: false,
+
+  <script>
+    let webstore = new Vue({
+      el: "#webstore",
+      data: {
+        message: "Hello Vue!",
+        currentPage: "checkoutPage",
+        courses: courses,
+        cart: [],
+        credentials: {
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
         },
-        methods: {
-          showToast(message) {
-            document.getElementById("toastMessage").innerText = message;
-            let toastElement = document.getElementById("liveToast");
-            let toast = new bootstrap.Toast(toastElement);
-            toast.show();
-          },
+        signinEmail: "",
+        signinPassword: "",
+        order: {
+          firstName: "",
+          lastName: "",
+          address: "",
+          city: "",
+          state: "",
+          zip: "",
+          method: "Home",
+          gift: false,
+        },
+        states: {
+          CA: "California",
+          TX: "Texas",
+          NY: "New York",
+          FL: "Florida",
+          IL: "Illinois",
+        },
+        searchQuery: "",
+        selectedLocation: "",
+        selectedPrice: "",
+        checkoutStep: "summary",
+        isSignedIn: false,
+        pendingAdd: null,
+        showSigninModal: false,
+        sortBy: 'subject',  // 'subject' | 'location' | 'price' | 'spaces'
+        sortOrder: 'asc',   // 'asc' | 'desc'
 
-          //Page Navigation
-          change(page) {
-            this.currentPage = page;
-          },
+      },
+      methods: {
+        showToast(message) {
+          document.getElementById("toastMessage").innerText = message;
+          let toastElement = document.getElementById("liveToast");
+          let toast = new bootstrap.Toast(toastElement);
+          toast.show();
+        },
 
-          //Sign Up Function
-          signUp() {
-            if (
-              this.credentials.firstName.trim() === "" ||
-              this.credentials.lastName.trim() === "" ||
-              this.credentials.email.trim() === "" ||
-              this.credentials.password.trim() === ""
-            ) {
-              this.showToast("Please fill in all fields.");
-              return;
-            }
+        //Page Navigation
+        change(page) {
+          this.currentPage = page;
+        },
 
-            if (
-              this.credentials.password !== this.credentials.confirmPassword
-            ) {
-              this.showToast("Passwords do not match!");
-              return;
-            }
-
-            if (
-              this.credentials.password.length < 8 ||
-              this.credentials.password.length > 20
-            ) {
-              this.showToast("Password must be 8-20 characters long.");
-              return;
-            }
-
-            this.showToast(`Welcome aboard, ${this.credentials.firstName}!`);
-            this.currentPage = "signIn";
-          },
-
-          // Sign In Function
-          signIn() {
-            if (
-              this.signinEmail.trim() === "" ||
-              this.signinPassword.trim() === ""
-            ) {
-              this.showToast("Please fill in all fields.");
-              return;
-            }
-
-            if (
-              this.signinEmail === this.credentials.email &&
-              this.signinPassword === this.credentials.password
-            ) {
-              this.isSignedIn=true;
-              this.showToast("Sign in successful!");
-              if (this.pendingAdd) {
-                this._addItemToCartInternal(this.pendingAdd);
-                this.pendingAdd = null;
-              }
-              this.currentPage = "home";
-            } else {
-              this.showToast("Invalid email or password!");
-            }
-          },
-
-          addItemToCart(course) {
-              if (!this.isSignedIn) {
-                this.pendingAdd = course;
-                this.showSigninModal = true;   // open modal via Vue only
-                return;
-              }
-              this._addItemToCartInternal(course);
-            },
-
-            _addItemToCartInternal(course) {
-              const existing = this.cart.find((i) => i.id === course.id);
-              if (existing) existing.quantity++;
-              else this.cart.push({ ...course, quantity: 1 });
-              this.showToast(`${course.title} added to cart.`);
-            },
-
-          removeFromCart(index) {
-            this.cart.splice(index, 1);
-            this.showToast("Item removed from cart.");
+        //Sign Up Function
+        signUp() {
+          if (
+            this.credentials.firstName.trim() === "" ||
+            this.credentials.lastName.trim() === "" ||
+            this.credentials.email.trim() === "" ||
+            this.credentials.password.trim() === ""
+          ) {
+            this.showToast("Please fill in all fields.");
+            return;
           }
-          ,
-          itemLeft(course) {
-            const inCart = this.cart.find((item) => item.id === course.id);
-            const quantityInCart = inCart ? inCart.quantity : 0;
-            return course.availableInventory - quantityInCart;
-          },
 
-          cartCount(id) {
-            return this.cart.filter((c) => c === id).length;
-          },
-          goToForm() {
-            // If you want the live panel to show names, copy them once into order:
-            if (!this.order.firstName) this.order.firstName = this.credentials.firstName || "";
-            if (!this.order.lastName) this.order.lastName = this.credentials.lastName || "";
-            this.checkoutStep = "form";
-          },
-          goToDetails(){
-            this.checkoutStep = "confirmDetails";
-}
-          ,
-          placeOrder() {
-            if (this.cart.length === 0) return this.showToast("Your cart is empty.");
-
-            const required = [
-              ["Address", this.order.address],
-              ["City", this.order.city],
-              ["State", this.order.state],
-              ["Zip", this.order.zip],
-            ];
-            const miss = required.find(([label, v]) => !v || String(v).trim() === "");
-            if (miss) return this.showToast(`Please fill in: ${miss[0]}.`);
-
-            this.showToast(`Order placed! Total $${this.cartTotal.toFixed(2)}.`);
-            this.cart = [];
-            this.checkoutStep = "summary";
-          },
-          openSigninModal() { this.showSigninModal = true; },
-          closeSigninModal() { this.showSigninModal = false; this.pendingAdd = null; },
-          goToSignInFromModal() { 
-            this.showSigninModal = false;
-            this.change('signIn');
-          },
-
-        },
-        computed: {
-          ItemInCart() {
-            return this.cart.length > 0;
-          },
-          cartItemCount() {
-            return this.cart.length;
-          },
-          filteredCourses() {
-            return this.courses.filter((course) => {
-              const matchesSearch =
-                course.title
-                  .toLowerCase()
-                  .includes(this.searchQuery.toLowerCase()) ||
-                course.description
-                  .toLowerCase()
-                  .includes(this.searchQuery.toLowerCase());
-
-              const matchesLocation =
-                !this.selectedLocation ||
-                course.location === this.selectedLocation;
-
-              const matchesPrice =
-                !this.selectedPrice ||
-                (this.selectedPrice === "low" && course.price < 50) ||
-                (this.selectedPrice === "mid" &&
-                  course.price >= 50 &&
-                  course.price <= 100) ||
-                (this.selectedPrice === "high" && course.price > 100);
-
-              return matchesSearch && matchesLocation && matchesPrice;
-            });
-          },
-          cartTotal() {
-            return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+          if (
+            this.credentials.password !== this.credentials.confirmPassword
+          ) {
+            this.showToast("Passwords do not match!");
+            return;
           }
-          ,
 
-          uniqueLocations() {
-            const locations = this.courses.map((course) => course.location);
-            return [...new Set(locations)];
-          },
+          if (
+            this.credentials.password.length < 8 ||
+            this.credentials.password.length > 20
+          ) {
+            this.showToast("Password must be 8-20 characters long.");
+            return;
+          }
+
+          this.showToast(`Welcome aboard, ${this.credentials.firstName}!`);
+          this.currentPage = "signIn";
         },
-      });
-    </script>
+
+        // Sign In Function
+        signIn() {
+          if (
+            this.signinEmail.trim() === "" ||
+            this.signinPassword.trim() === ""
+          ) {
+            this.showToast("Please fill in all fields.");
+            return;
+          }
+
+          if (
+            this.signinEmail === this.credentials.email &&
+            this.signinPassword === this.credentials.password
+          ) {
+            this.isSignedIn = true;
+            this.showToast("Sign in successful!");
+            if (this.pendingAdd) {
+              this._addItemToCartInternal(this.pendingAdd);
+              this.pendingAdd = null;
+            }
+            this.currentPage = "home";
+          } else {
+            this.showToast("Invalid email or password!");
+          }
+        },
+
+        addItemToCart(course) {
+          if (!this.isSignedIn) {
+            this.pendingAdd = course;
+            this.showSigninModal = true;   // open modal via Vue only
+            return;
+          }
+          this._addItemToCartInternal(course);
+        },
+
+        _addItemToCartInternal(course) {
+          const existing = this.cart.find((i) => i.id === course.id);
+          if (existing) existing.quantity++;
+          else this.cart.push({ ...course, quantity: 1 });
+          this.showToast(`${course.title} added to cart.`);
+        },
+
+        removeFromCart(index) {
+          this.cart.splice(index, 1);
+          this.showToast("Item removed from cart.");
+        }
+        ,
+        itemLeft(course) {
+          const inCart = this.cart.find((item) => item.id === course.id);
+          const quantityInCart = inCart ? inCart.quantity : 0;
+          return course.availableInventory - quantityInCart;
+        },
+
+        cartCount(id) {
+          return this.cart.filter((c) => c === id).length;
+        },
+        goToForm() {
+          // If you want the live panel to show names, copy them once into order:
+          if (!this.order.firstName) this.order.firstName = this.credentials.firstName || "";
+          if (!this.order.lastName) this.order.lastName = this.credentials.lastName || "";
+          this.checkoutStep = "form";
+        },
+        goToDetails() {
+          this.checkoutStep = "confirmDetails";
+        }
+        ,
+        placeOrder() {
+          if (this.cart.length === 0) return this.showToast("Your cart is empty.");
+
+          const required = [
+            ["Address", this.order.address],
+            ["City", this.order.city],
+            ["State", this.order.state],
+            ["Zip", this.order.zip],
+          ];
+          const miss = required.find(([label, v]) => !v || String(v).trim() === "");
+          if (miss) return this.showToast(`Please fill in: ${miss[0]}.`);
+
+          this.showToast(`Order placed! Total $${this.cartTotal.toFixed(2)}.`);
+          this.cart = [];
+          this.checkoutStep = "summary";
+        },
+        openSigninModal() { this.showSigninModal = true; },
+        closeSigninModal() { this.showSigninModal = false; this.pendingAdd = null; },
+        goToSignInFromModal() {
+          this.showSigninModal = false;
+          this.change('signIn');
+        },
+
+      },
+      computed: {
+        ItemInCart() {
+          return this.cart.length > 0;
+        },
+        cartItemCount() {
+          return this.cart.length;
+        },
+        finalCourses() {
+          // 1) filter
+          const filtered = this.courses.filter((course) => {
+            const matchesSearch =
+              course.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+              course.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+
+            const matchesLocation = !this.selectedLocation || course.location === this.selectedLocation;
+
+            const matchesPrice =
+              !this.selectedPrice ||
+              (this.selectedPrice === "low" && course.price < 50) ||
+              (this.selectedPrice === "mid" && course.price >= 50 && course.price <= 100) ||
+              (this.selectedPrice === "high" && course.price > 100);
+
+            return matchesSearch && matchesLocation && matchesPrice;
+          });
+
+          // 2) augment for spaces (availability)
+          const augmented = filtered.map(c => ({ ...c, __spaces: this.itemLeft(c) }));
+
+          // 3) sort
+          const dir = this.sortOrder === 'asc' ? 1 : -1;
+          return augmented.sort((a, b) => {
+            let va, vb;
+            switch (this.sortBy) {
+              case 'price': va = +a.price || 0; vb = +b.price || 0; break;
+              case 'spaces': va = +a.__spaces || 0; vb = +b.__spaces || 0; break;
+              case 'location': va = (a.location || '').toLowerCase(); vb = (b.location || '').toLowerCase(); break;
+              case 'subject':
+              default:
+                va = (a.subject || a.category || a.title || '').toLowerCase();
+                vb = (b.subject || b.category || b.title || '').toLowerCase();
+            }
+            if (typeof va === 'number') return (va - vb) * dir;
+            return va.localeCompare(vb) * dir;
+          });
+        },
+
+        cartTotal() {
+          return this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        }
+        ,
+
+        uniqueLocations() {
+          const locations = this.courses.map((course) => course.location);
+          return [...new Set(locations)];
+        },
+      },
+    });
+  </script>
 </body>
 
 </html>
