@@ -60,7 +60,7 @@
 
       <!-- Home Page -->
       <div v-if="currentPage === 'home'">
-        <h1 class="text-center" >Browse through our courses</h1>
+        <h1 class="text-center">Browse through our courses</h1>
         <p class="text-center">Empowering your education journey.</p>
         <div class="container my-4">
           <div
@@ -210,10 +210,48 @@
       <!-- Courses Page -->
       <div v-if="currentPage === 'courses'" class="container mt-4">
         <h1>Courses</h1>
-        <p>Here are your courses.</p>
+        <p>Explore and filter through our courses.</p>
 
+        <!--Search and Filter Controls -->
+        <div class="row mb-4 g-3">
+          <!-- Search -->
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Search courses..."
+              v-model="searchQuery"
+            />
+          </div>
+
+          <!-- Location Filter -->
+          <div class="col-md-4">
+            <select class="form-select" v-model="selectedLocation">
+              <option value="">All Locations</option>
+              <option v-for="loc in uniqueLocations" :key="loc" :value="loc">
+                {{ loc }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Price Filter -->
+          <div class="col-md-4">
+            <select class="form-select" v-model="selectedPrice">
+              <option value="">All Prices</option>
+              <option value="low">Below $50</option>
+              <option value="mid">$50 - $100</option>
+              <option value="high">Above $100</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filtered Course List -->
         <div class="row">
-          <div v-for="course in courses" :key="course.id" class="col-md-6 mb-4">
+          <div
+            v-for="course in filteredCourses"
+            :key="course.id"
+            class="col-md-6 mb-4"
+          >
             <div class="course-card p-3 shadow-sm">
               <img
                 :src="course.image"
@@ -223,7 +261,7 @@
               <h2>{{ course.title }}</h2>
               <p>{{ course.description }}</p>
               <p><strong>Location:</strong> {{ course.location }}</p>
-              <p><strong>Price:</strong> {{ course.price }}</p>
+              <p><strong>Price:</strong> ${{ course.price }}</p>
               <button
                 class="btn btn-success w-100"
                 v-on:click="addItemToCart(course)"
@@ -242,6 +280,11 @@
               </div>
             </div>
           </div>
+
+          <!-- No results message -->
+          <p v-if="filteredCourses.length === 0" class="text-center text-muted">
+            No courses match your search or filters.
+          </p>
         </div>
       </div>
 
@@ -270,6 +313,59 @@
       <!-- CHECKOUT -->
       <div v-if="currentPage==='checkoutPage'" class="container">
         <h2>Checkout</h2>
+        <p v-if="cart.length === 0" class="text-muted">
+          Your cart is empty. Go to
+          <a href="#" @click="change('courses')">Courses</a> to add items.
+        </p>
+        <div v-else>
+    <table class="table table-bordered table-striped align-middle text-center shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>Image</th>
+          <th>Course Title</th>
+          <th>Location</th>
+          <th>Price ($)</th>
+          <th>Quantity</th>
+          <th>Total</th>
+          <th>Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, index) in cart" :key="item.id">
+          <td>{{ index + 1 }}</td>
+
+          <td>
+            <img
+              :src="item.image"
+              alt="Course Image"
+              class="img-thumbnail"
+              style="width: 100px; height: 70px; object-fit: cover;"
+            />
+          </td>
+
+          <td>{{ item.title }}</td>
+          <td>{{ item.location }}</td>
+          <td>${{ item.price }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.price * item.quantity }}</td>
+
+          
+          <td>
+            <button class="btn btn-danger btn-sm" @click="removeFromCart(index)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+
+      <tfoot class="table-secondary">
+        <tr>
+          <td colspan="6" class="text-end"><strong>Total Amount:</strong></td>
+          <td colspan="2"><strong>${{ cartTotal }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
 
         <p v-if="cartItemCount > 0">
           You have {{ cartItemCount }} item(s) in your cart.
@@ -451,7 +547,7 @@
         el: "#webstore",
         data: {
           message: "Hello Vue!",
-          currentPage: "signUp",
+          currentPage: "checkoutPage",
           courses: courses,
           cart: [],
           credentials: {
@@ -480,6 +576,9 @@
             FL: "Florida",
             IL: "Illinois",
           },
+          searchQuery: "",
+          selectedLocation: "",
+          selectedPrice: "",
         },
         methods: {
           showToast(message) {
@@ -564,9 +663,38 @@
           cartItemCount() {
             return this.cart.length;
           },
+          filteredCourses() {
+            return this.courses.filter((course) => {
+              const matchesSearch =
+                course.title
+                  .toLowerCase()
+                  .includes(this.searchQuery.toLowerCase()) ||
+                course.description
+                  .toLowerCase()
+                  .includes(this.searchQuery.toLowerCase());
+
+              const matchesLocation =
+                !this.selectedLocation ||
+                course.location === this.selectedLocation;
+
+              const matchesPrice =
+                !this.selectedPrice ||
+                (this.selectedPrice === "low" && course.price < 50) ||
+                (this.selectedPrice === "mid" &&
+                  course.price >= 50 &&
+                  course.price <= 100) ||
+                (this.selectedPrice === "high" && course.price > 100);
+
+              return matchesSearch && matchesLocation && matchesPrice;
+            });
+          },
+
+          uniqueLocations() {
+            const locations = this.courses.map((course) => course.location);
+            return [...new Set(locations)];
+          },
         },
       });
     </script>
   </body>
 </html>
-
