@@ -86,3 +86,23 @@ nav a.active {
   flex-grow: 1;
   font-size: 14px;
 }
+
+footer{
+  background: linear-gradient(135deg, #00572b 0%, #72e6b0 100%);
+}
+
+.v-modal-root { position: fixed; inset: 0; z-index: 1060; }
+.v-backdrop   { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+
+.v-modal {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 500px);
+  background: #fff; border-radius: .5rem; overflow: hidden;
+  box-shadow: 0 1rem 3rem rgba(0,0,0,.175);
+}
+
+.v-modal-header, .v-modal-footer { padding: .75rem 1rem; display: flex; align-items: center; gap: .5rem; }
+.v-modal-header { justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,.1); }
+.v-modal-body   { padding: 1rem; }
+.btn-close { border: none; background: transparent; width: 1.5rem; height: 1.5rem; }
