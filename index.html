@@ -33,10 +33,14 @@
         <a href="#" @click="change('profile')" :class="{active: currentPage === 'profile'}">
           <i class="fas fa-user"></i> Profile
         </a>
-        <button class="btn btn-primary" @click="change('checkoutPage')"
+        <button class="btn btn-primary" @click="toggleCart" :disabled="cartItemCount === 0"
+          :aria-disabled="cartItemCount === 0"
+          :title="cartItemCount === 0 ? 'Add a lesson to enable the cart' : 'View your cart'"
           style="margin-left: 15px; background-color: #00572b">
-          <i class="fas fa-cart-shopping"></i> Checkout ({{ cart.length }})
+          <i class="fas fa-cart-shopping"></i>
+          Shopping Cart ({{ cart.length }})
         </button>
+
       </div>
     </nav>
     <!-- Sign-in Required Modal -->
@@ -313,7 +317,7 @@
           </p>
           <p v-else>Your cart is empty.</p>
           <button class="btn btn-success" @click="goToForm">
-            Continue →
+            CheckOut →
           </button>
 
         </div>
@@ -430,7 +434,7 @@
           </button>
           <p>
             Don't have an account?
-            <a href="javascript:void(0)" @click="change('signUp')">Sign In</a>
+            <a href="javascript:void(0)" @click="change('signUp')">Sign Up</a>
           </p>
         </form>
       </div>
@@ -501,6 +505,7 @@
         showSigninModal: false,
         sortBy: 'subject',  // 'subject' | 'location' | 'price' | 'spaces'
         sortOrder: 'asc',   // 'asc' | 'desc'
+        previousNonCartPage: "courses"
 
       },
       methods: {
@@ -513,8 +518,24 @@
 
         //Page Navigation
         change(page) {
+          if (page !== 'checkoutPage') {
+            this.previousNonCartPage = page;
+          }
           this.currentPage = page;
         },
+        toggleCart() {
+          if (this.cart.length === 0) {
+            this.showToast('Add a lesson to your cart first.');
+            return;
+          }
+          if (this.currentPage === 'checkoutPage') {
+            this.currentPage = this.previousNonCartPage || 'courses';
+          } else {
+            this.previousNonCartPage = this.currentPage;
+            this.currentPage = 'checkoutPage';
+          }
+        },
+
 
         //Sign Up Function
         signUp() {
@@ -693,6 +714,16 @@
           return [...new Set(locations)];
         },
       },
+      watch: {
+        cart: {
+          deep: true,
+          handler(newCart) {
+            if (this.currentPage === 'checkoutPage' && newCart.length === 0) {
+              this.currentPage = this.previousNonCartPage || 'courses';
+            }
+          }
+        }
+      }
     });
   </script>
 </body>
