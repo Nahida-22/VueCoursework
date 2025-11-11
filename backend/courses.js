@@ -5,7 +5,7 @@
               id:"0001",
               title: 'Mathematics 101',
               description: 'An introductory course to Mathematics.',
-              image: 'assets/MathCourse.png',
+              image: '../Front-end/assets/MathCourse.png',
               location: 'Building A, Room 101',
               price: 100,
               availableInventory: 5
@@ -14,7 +14,7 @@
               id:"0002",
               title: 'Science 301',
               description: 'Exploring the wonders of Science.',
-              image: 'assets/scienceCourse.jpg',
+              image: '../Front-end/assets/scienceCourse.jpg',
               location: 'Building B, Room 202',
               price: 150,
               availableInventory: 3
@@ -23,7 +23,7 @@
               id:"0003",
               title: 'History 201',
               description: 'A journey through historical events.',
-              image: 'assets/historyCourse.jpg',
+              image: '../Front-end/assets/historyCourse.jpg',
               location: 'Building C, Room 303',
               price: 120,
               availableInventory: 4
@@ -32,7 +32,7 @@
               id:"0004",
               title: 'Art 101',
               description: 'Discovering the world of Art.',
-              image: 'assets/artCourse.jpg',
+              image: '../Front-end/assets/artCourse.jpg',
               location: 'Building D, Room 404',
               price: 130,
               availableInventory: 2
@@ -41,7 +41,7 @@
               id:"0005",
               title: 'Computer Science 101',
               description: 'Introduction to Computer Science concepts.',
-              image: 'assets/computerScienceCourse.jpg',
+              image: '../Front-end/assets/computerScienceCourse.jpg',
               location: 'Building E, Room 505',
               price: 200,
               availableInventory: 6
@@ -49,7 +49,7 @@
             {
               id:"0006",
               title:'French Beginner class',
-              image:'assets/frenchCourse.jpeg',
+              image:'../Front-end/assets/frenchCourse.jpeg',
               description: 'The ultimate french learning course for beginners',
               location:'Building D, Room 403',
               price: 250,
@@ -59,7 +59,7 @@
             {
               id:"0007",
               title:'ACCA Level 1',
-              image:'assets/ACCA.jpg',
+              image:'../Front-end/assets/ACCA.jpg',
               description: 'The ultimate crash course',
               location:'Building A, Room 103',
               price: 300,
@@ -69,7 +69,7 @@
             {
               id:"0008",
               title:'Economics and Finance',
-              image:'assets/economicsCourse.jpeg',
+              image:'../Front-end/assets/economicsCourse.jpeg',
               description: 'A comprehensive course',
               location:'Building A, Room 105',
               price: 500,
@@ -79,7 +79,7 @@
             {
               id:"0009",
               title:'Law and Finance',
-              image:'assets/financeLawCourse.jpg',
+              image:'../Front-end/assets/financeLawCourse.jpg',
               description: 'Learn more about the world of finance in Law',
               location:'Building B, Room 205',
               price: 400,
@@ -89,7 +89,7 @@
             {
               id:"0010",
               title:'Business Studies',
-              image:'assets/businessCourse.png',
+              image:'../Front-end/assets/businessCourse.png',
               description: 'An introduction to Business Management',
               location:'Building c, Room 306',
               price: 110,
