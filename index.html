@@ -398,6 +398,11 @@
           <p><strong>Shipping Method:</strong> {{ order.method }}</p>
           <p><strong>Gift:</strong> {{ order.gift ? 'Yes' : 'No' }}</p>
         </div>
+        <div class="mt-3">
+    <button class="btn btn-success" @click="placeOrder">
+      Confirm & Place Order
+    </button>
+  </div>
 
       </div>
 
@@ -508,12 +513,12 @@
         previousNonCartPage: "courses"
 
       },
-      created: function(){
+      created: function () {
         fetch("http://localhost:3000/api/lessons").then(
-          function(response){
+          function (response) {
             response.json().then(
-              function(json){
-                webstore.courses=json;
+              function (json) {
+                webstore.courses = json;
                 //console.log(webstore.products);
               }
             )
@@ -648,7 +653,7 @@
           this.checkoutStep = "confirmDetails";
         }
         ,
-        placeOrder() {
+        async placeOrder() {
           if (this.cart.length === 0) return this.showToast("Your cart is empty.");
 
           const required = [
@@ -659,10 +664,45 @@
           ];
           const miss = required.find(([label, v]) => !v || String(v).trim() === "");
           if (miss) return this.showToast(`Please fill in: ${miss[0]}.`);
+          //Build items array expected by backend
+          const items = this.cart.map(i => ({
+            lessonID: i.id,
+            title: i.title,
+            location: i.location,
+            image: i.image,
+            price: i.price,
+            quantity: i.quantity
+          }));
+          //Build data matching backend
+          const data = {
+            firstName: this.order.firstName || this.credentials.firstName || "",
+            lastName: this.order.lastName || this.credentials.lastName || "",
+            address: this.order.address,
+            city: this.order.city,
+            state: this.order.state,
+            zip: String(this.order.zip || "").trim(),
+            phoneNumber: String(this.order.phoneNumber || "").trim(),
+            method: this.order.method,
+            gift: !!this.order.gift,
+            items
+          };
+          try {
+            const res = await fetch("http://localhost:3000/api/order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(data)
+            });
+            const results = await res.json();
+            this.showToast(`Order placed! Total $${this.cartTotal.toFixed(2)}.`);
+            this.cart = [];
+            this.checkoutStep = "summary";
+            this.currentPage = "home";
 
-          this.showToast(`Order placed! Total $${this.cartTotal.toFixed(2)}.`);
-          this.cart = [];
-          this.checkoutStep = "summary";
+          } catch (e) {
+            console.error(e);
+               this.showToast(e.message || "Network error while placing order.");
+            }
+
         },
         openSigninModal() { this.showSigninModal = true; },
         closeSigninModal() { this.showSigninModal = false; this.pendingAdd = null; },
