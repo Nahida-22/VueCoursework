@@ -24,9 +24,7 @@
     <nav>
       <div class="logo"><i class="fas fa-graduation-cap"></i> MyAcademia</div>
       <div class="nav-links">
-        <a href="#" @click="change('home')" :class="{active: currentPage === 'home'}">
-          <i class="fas fa-home"></i> Home
-        </a>
+        
         <a href="#" @click="change('courses')" :class="{active: currentPage === 'courses'}">
           <i class="fas fa-book"></i> Courses
         </a>
@@ -65,38 +63,7 @@
       </div>
     </div>
 
-    <!-- Home Page -->
-    <div v-if="currentPage === 'home'">
-      <h1 class="text-center">Browse through our courses</h1>
-      <p class="text-center">Empowering your education journey.</p>
-      <div class="container my-4">
-        <div id="carouselExampleAutoplaying" class="carousel slide mx-auto" data-bs-ride="carousel" style="
-              max-width: 400px;
-              height: 400px;
-              overflow: hidden;
-              background-color: #00572b2f;
-            ">
-          <div class="carousel-inner">
-            <div v-for="(course, index) in courses" :key="course.id" class="carousel-item"
-              :class="{ active: index === 0 }">
-              <img :src="course.image" class="d-block w-100" :alt="course.title"
-                style="height: 400px; object-fit: cover" />
-            </div>
-          </div>
-
-          <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying"
-            data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying"
-            data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
-        </div>
-      </div>
-    </div>
+   
 
     <!-- Sign Up Page -->
     <div v-if="currentPage === 'signUp'">
@@ -167,7 +134,8 @@
       <div class="row mb-4 g-3">
         <!-- Search -->
         <div class="col-md-4">
-          <input type="text" class="form-control" placeholder="Search courses..." v-model="searchQuery" />
+          <input type="text" class="form-control" placeholder="Search courses..." v-model="searchQuery"
+            @input="searchCourses" />
         </div>
 
         <!-- Location Filter -->
@@ -321,9 +289,6 @@
           </button>
 
         </div>
-      </div>
-
-      <div v-if="checkoutStep==='form'">
         <div class="card p-3 mb-3" style="max-width: 720px">
           <div class="row g-3">
             <div class="col-md-6">
@@ -334,7 +299,10 @@
               <label class="form-label">Last Name</label>
               <input class="form-control" v-model.trim="credentials.lastName" disabled />
             </div>
-
+            <div class="col-12">
+              <label class="form-label">Phone Number</label>
+              <input class="form-control" v-model.trim="order.phoneNumber" />
+            </div>
             <div class="col-12">
               <label class="form-label">Address</label>
               <input class="form-control" v-model.trim="order.address" />
@@ -380,17 +348,14 @@
               </div>
             </div>
 
-            <div class="col-12">
-              <button class="btn btn-primary" @click="goToDetails">Place Order</button>
-            </div>
+
           </div>
         </div>
-      </div>
-      <div v-if="checkoutStep ==='confirmDetails'">
         <h4>Order Information (live)</h4>
         <div class="card p-3" style="max-width: 720px">
           <p><strong>First Name:</strong> {{ order.firstName}}</p>
           <p><strong>Last Name:</strong> {{ order.lastName }}</p>
+          <p><strong>phone Number:</strong> {{ order.phoneNumber }}</p>
           <p><strong>Address:</strong> {{ order.address }}</p>
           <p><strong>City:</strong> {{ order.city }}</p>
           <p><strong>State:</strong> {{ order.state }}</p>
@@ -399,23 +364,16 @@
           <p><strong>Gift:</strong> {{ order.gift ? 'Yes' : 'No' }}</p>
         </div>
         <div class="mt-3">
-    <button class="btn btn-success" @click="placeOrder">
-      Confirm & Place Order
-    </button>
-  </div>
-
+          <button class="btn btn-success" @click="placeOrder">
+            Check Out →
+          </button>
+        </div>
       </div>
 
 
 
 
-
     </div>
-
-
-
-
-
 
     <!-- Sign In Page -->
     <div v-if="currentPage === 'signIn'">
@@ -472,7 +430,7 @@
       el: "#webstore",
       data: {
         message: "Hello Vue!",
-        currentPage: "checkoutPage",
+        currentPage: "courses",
         courses: [],
         cart: [],
         credentials: {
@@ -487,6 +445,7 @@
         order: {
           firstName: "",
           lastName: "",
+          phoneNumber: "",
           address: "",
           city: "",
           state: "",
@@ -502,6 +461,7 @@
           IL: "Illinois",
         },
         searchQuery: "",
+        searchResults: "",
         selectedLocation: "",
         selectedPrice: "",
         checkoutStep: "summary",
@@ -527,6 +487,14 @@
 
         );
       },
+      watch: {
+        searchQuery: function (newVal) {
+          if (newVal.length >= 2 || newVal.length === 0) {
+            this.searchCourses();
+          }
+        }
+      },
+
       methods: {
         showToast(message) {
           document.getElementById("toastMessage").innerText = message;
@@ -553,6 +521,10 @@
             this.previousNonCartPage = this.currentPage;
             this.currentPage = 'checkoutPage';
           }
+          this.order.firstName = this.credentials.firstName || "";
+          this.order.lastName = this.credentials.lastName || "";
+        
+
         },
 
 
@@ -607,7 +579,7 @@
               this._addItemToCartInternal(this.pendingAdd);
               this.pendingAdd = null;
             }
-            this.currentPage = "home";
+            this.currentPage = "courses";
           } else {
             this.showToast("Invalid email or password!");
           }
@@ -643,16 +615,8 @@
         cartCount(id) {
           return this.cart.filter((c) => c === id).length;
         },
-        goToForm() {
-          // If you want the live panel to show names, copy them once into order:
-          if (!this.order.firstName) this.order.firstName = this.credentials.firstName || "";
-          if (!this.order.lastName) this.order.lastName = this.credentials.lastName || "";
-          this.checkoutStep = "form";
-        },
-        goToDetails() {
-          this.checkoutStep = "confirmDetails";
-        }
-        ,
+
+
         async placeOrder() {
           if (this.cart.length === 0) return this.showToast("Your cart is empty.");
 
@@ -677,6 +641,7 @@
           const data = {
             firstName: this.order.firstName || this.credentials.firstName || "",
             lastName: this.order.lastName || this.credentials.lastName || "",
+            phoneNumber: this.order.phoneNumber,
             address: this.order.address,
             city: this.order.city,
             state: this.order.state,
@@ -694,16 +659,83 @@
             });
             const results = await res.json();
             this.showToast(`Order placed! Total $${this.cartTotal.toFixed(2)}.`);
+            await this.updateLessons();
+            alert("Order completed and lesson spaces updated!");
+
             this.cart = [];
             this.checkoutStep = "summary";
-            this.currentPage = "home";
+            this.currentPage = "courses";
 
           } catch (e) {
             console.error(e);
-               this.showToast(e.message || "Network error while placing order.");
-            }
+            this.showToast(e.message || "Network error while placing order.");
+          }
+
 
         },
+        async updateLessons() {
+          try {
+            console.log("Cart items:", this.cart);
+            console.log("Available courses:", this.courses);
+
+            for (const item of this.cart) {
+              console.log("Processing item:", item);
+
+              // Find the actual lesson to see its real ID
+              const lesson = this.courses.find(c => c._id === item.id || c._id === item._id || c.title === item.title);
+              console.log("Found lesson:", lesson);
+
+              if (!lesson) {
+                console.error("No matching lesson found for item:", item);
+                continue;
+              }
+
+              // Use the actual lesson ID from the database
+              const lessonId = lesson._id;
+              console.log("Using lesson ID:", lessonId);
+
+              const currentSpaces = Number(lesson.availableInventory || 0);
+              const newSpace = currentSpaces - Number(item.quantity || 0);
+
+              console.log(`Updating ${lesson.title}: ${currentSpaces} -> ${newSpace}`);
+
+              const res = await fetch(`http://localhost:3000/api/Courses/${lessonId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  availableInventory: newSpace
+                })
+              });
+
+              console.log("Response status:", res.status);
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`HTTP error! status: ${res.status} - ${errorText}`);
+              }
+
+              const result = await res.json();
+              console.log("Update result:", result);
+            }
+          } catch (err) {
+            console.error("Error updating lesson spaces:", err);
+            this.showToast("Order saved but could not update lesson spaces.");
+          }
+        },
+        async searchCourses() {
+          try {
+            const keyword = this.searchQuery.trim();
+            const res = await fetch(`http://localhost:3000/api/search?keyword=${encodeURIComponent(keyword)}`)
+            const data = await res.json();
+            this.courses = data;
+            console.log("Search results:", data);
+
+          } catch (err) {
+            console.error("Search error:", err);
+            this.showToast("Search failed. Please try again.");
+          }
+        },
+
         openSigninModal() { this.showSigninModal = true; },
         closeSigninModal() { this.showSigninModal = false; this.pendingAdd = null; },
         goToSignInFromModal() {
@@ -720,13 +752,12 @@
           return this.cart.length;
         },
         finalCourses() {
-          // 1) filter
+          // 1) filter (backend already applied search keyword)
           const filtered = this.courses.filter((course) => {
-            const matchesSearch =
-              course.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-              course.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+            const matchesSearch = true; // <-- important: don't filter again by searchQuery
 
-            const matchesLocation = !this.selectedLocation || course.location === this.selectedLocation;
+            const matchesLocation =
+              !this.selectedLocation || course.location === this.selectedLocation;
 
             const matchesPrice =
               !this.selectedPrice ||
@@ -740,7 +771,7 @@
           // 2) augment for spaces (availability)
           const augmented = filtered.map(c => ({ ...c, __spaces: this.itemLeft(c) }));
 
-          // 3) sort
+          // 3) sort (unchanged)
           const dir = this.sortOrder === 'asc' ? 1 : -1;
           return augmented.sort((a, b) => {
             let va, vb;
