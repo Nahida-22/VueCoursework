@@ -24,7 +24,7 @@
     <nav>
       <div class="logo"><i class="fas fa-graduation-cap"></i> MyAcademia</div>
       <div class="nav-links">
-        
+
         <a href="#" @click="change('courses')" :class="{active: currentPage === 'courses'}">
           <i class="fas fa-book"></i> Courses
         </a>
@@ -63,7 +63,7 @@
       </div>
     </div>
 
-   
+
 
     <!-- Sign Up Page -->
     <div v-if="currentPage === 'signUp'">
@@ -283,10 +283,7 @@
           <p v-if="cartItemCount > 0">
             You have {{ cartItemCount }} item(s) in your cart.
           </p>
-          <p v-else>Your cart is empty.</p>
-          <button class="btn btn-success" @click="goToForm">
-            CheckOut →
-          </button>
+
 
         </div>
         <div class="card p-3 mb-3" style="max-width: 720px">
@@ -523,13 +520,13 @@
           }
           this.order.firstName = this.credentials.firstName || "";
           this.order.lastName = this.credentials.lastName || "";
-        
+
 
         },
 
 
         //Sign Up Function
-        signUp() {
+        signUp: async function () {
           if (
             this.credentials.firstName.trim() === "" ||
             this.credentials.lastName.trim() === "" ||
@@ -554,13 +551,38 @@
             this.showToast("Password must be 8-20 characters long.");
             return;
           }
+          try {
+            const res = await fetch("http://localhost:3000/api/signup", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                firstName: this.credentials.firstName.trim(),
+                lastName: this.credentials.lastName.trim(),
+                email: this.credentials.email.trim(),
+                password: this.credentials.password
+              })
 
-          this.showToast(`Welcome aboard, ${this.credentials.firstName}!`);
-          this.currentPage = "signIn";
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+              this.showToast(data.error || "Sign up failed.");
+              return;
+            }
+
+            this.showToast(`Account created for ${data.user.firstName}. Please sign in.`);
+            this.currentPage = "signIn";
+          } catch (err) {
+            console.error("Signup error:", err);
+            this.showToast("Network error during signup.");
+
+          }
+
+
         },
 
         // Sign In Function
-        signIn() {
+        async signIn() {
           if (
             this.signinEmail.trim() === "" ||
             this.signinPassword.trim() === ""
@@ -568,21 +590,39 @@
             this.showToast("Please fill in all fields.");
             return;
           }
+          try {
+            const res = await fetch("http://localhost:3000/api/signin", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                email: this.signinEmail.trim(),
+                password: this.signinPassword
+              })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              this.showToast(data.error || "Sign in failed.");
+              return;
+            }
+            this.credentials.firstName = data.user.firstName;
+            this.credentials.lastName = data.user.lastName;
+            this.credentials.email = data.user.email;
+            this.credentials.password = this.signinPassword;
 
-          if (
-            this.signinEmail === this.credentials.email &&
-            this.signinPassword === this.credentials.password
-          ) {
             this.isSignedIn = true;
             this.showToast("Sign in successful!");
+
+          
             if (this.pendingAdd) {
               this._addItemToCartInternal(this.pendingAdd);
               this.pendingAdd = null;
             }
             this.currentPage = "courses";
-          } else {
-            this.showToast("Invalid email or password!");
-          }
+          
+        }catch (err){
+          console.error("Sign In error:",err);
+          this.showToast("Error during sign in");
+        }
         },
 
         addItemToCart(course) {
