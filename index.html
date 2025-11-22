@@ -184,7 +184,7 @@
         <div v-for="course in finalCourses" :key="course.id" class="col-md-6 mb-4">
           <div class="course-card p-3 shadow-sm">
             <img :src="course.image" alt="Course Image" class="img-fluid mb-3" />
-            <h2>{{ course.title }}</h2>
+            <h2>{{ course.topic }}</h2>
             <p>{{ course.description }}</p>
             <p><strong>Location:</strong> {{ course.location }}</p>
             <p><strong>Price:</strong> ${{ course.price }}</p>
@@ -258,7 +258,7 @@
                     style="width: 100px; height: 70px; object-fit: cover;" />
                 </td>
 
-                <td>{{ item.title }}</td>
+                <td>{{ item.topic }}</td>
                 <td>{{ item.location }}</td>
                 <td>${{ item.price }}</td>
                 <td>{{ item.quantity }}</td>
@@ -290,11 +290,11 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">First Name</label>
-              <input class="form-control" v-model.trim="credentials.firstName" disabled />
+              <input class="form-control" v-model.trim="credentials.firstName"/>
             </div>
             <div class="col-md-6">
               <label class="form-label">Last Name</label>
-              <input class="form-control" v-model.trim="credentials.lastName" disabled />
+              <input class="form-control" v-model.trim="credentials.lastName"/>
             </div>
             <div class="col-12">
               <label class="form-label">Phone Number</label>
@@ -348,7 +348,7 @@
 
           </div>
         </div>
-        <h4>Order Information (live)</h4>
+        <h4> Confirm Order Information</h4>
         <div class="card p-3" style="max-width: 720px">
           <p><strong>First Name:</strong> {{ order.firstName}}</p>
           <p><strong>Last Name:</strong> {{ order.lastName }}</p>
@@ -361,7 +361,7 @@
           <p><strong>Gift:</strong> {{ order.gift ? 'Yes' : 'No' }}</p>
         </div>
         <div class="mt-3">
-          <button class="btn btn-success" @click="placeOrder">
+          <button class="btn btn-success" @click="placeOrder" :disabled="!isCheckoutEnabled">
             Check Out →
           </button>
         </div>
@@ -488,6 +488,7 @@
         searchQuery: function (newVal) {
           if (newVal.length >= 2 || newVal.length === 0) {
             this.searchCourses();
+            
           }
         }
       },
@@ -612,17 +613,17 @@
             this.isSignedIn = true;
             this.showToast("Sign in successful!");
 
-          
+
             if (this.pendingAdd) {
               this._addItemToCartInternal(this.pendingAdd);
               this.pendingAdd = null;
             }
             this.currentPage = "courses";
-          
-        }catch (err){
-          console.error("Sign In error:",err);
-          this.showToast("Error during sign in");
-        }
+
+          } catch (err) {
+            console.error("Sign In error:", err);
+            this.showToast("Error during sign in");
+          }
         },
 
         addItemToCart(course) {
@@ -638,7 +639,7 @@
           const existing = this.cart.find((i) => i.id === course.id);
           if (existing) existing.quantity++;
           else this.cart.push({ ...course, quantity: 1 });
-          this.showToast(`${course.title} added to cart.`);
+          this.showToast(`${course.topic} added to cart.`);
         },
 
         removeFromCart(index) {
@@ -649,7 +650,7 @@
         itemLeft(course) {
           const inCart = this.cart.find((item) => item.id === course.id);
           const quantityInCart = inCart ? inCart.quantity : 0;
-          return course.availableInventory - quantityInCart;
+          return course.space- quantityInCart;
         },
 
         cartCount(id) {
@@ -671,7 +672,7 @@
           //Build items array expected by backend
           const items = this.cart.map(i => ({
             lessonID: i.id,
-            title: i.title,
+            topic: i.topic,
             location: i.location,
             image: i.image,
             price: i.price,
@@ -722,7 +723,7 @@
               console.log("Processing item:", item);
 
               // Find the actual lesson to see its real ID
-              const lesson = this.courses.find(c => c._id === item.id || c._id === item._id || c.title === item.title);
+              const lesson = this.courses.find(c => c._id === item.id || c._id === item._id || c.topic === item.topic);
               console.log("Found lesson:", lesson);
 
               if (!lesson) {
@@ -734,16 +735,16 @@
               const lessonId = lesson._id;
               console.log("Using lesson ID:", lessonId);
 
-              const currentSpaces = Number(lesson.availableInventory || 0);
+              const currentSpaces = Number(lesson.space || 0);
               const newSpace = currentSpaces - Number(item.quantity || 0);
 
-              console.log(`Updating ${lesson.title}: ${currentSpaces} -> ${newSpace}`);
+              console.log(`Updating ${lesson.topic}: ${currentSpaces} -> ${newSpace}`);
 
               const res = await fetch(`http://localhost:3000/api/Courses/${lessonId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  availableInventory: newSpace
+                  space: newSpace
                 })
               });
 
@@ -821,8 +822,8 @@
               case 'location': va = (a.location || '').toLowerCase(); vb = (b.location || '').toLowerCase(); break;
               case 'subject':
               default:
-                va = (a.subject || a.category || a.title || '').toLowerCase();
-                vb = (b.subject || b.category || b.title || '').toLowerCase();
+                va = (a.subject || a.category || a.topic || '').toLowerCase();
+                vb = (b.subject || b.category || b.topic || '').toLowerCase();
             }
             if (typeof va === 'number') return (va - vb) * dir;
             return va.localeCompare(vb) * dir;
@@ -838,6 +839,21 @@
           const locations = this.courses.map((course) => course.location);
           return [...new Set(locations)];
         },
+        checkoutNameValid() {
+          const fullName = `${this.credentials.firstName} ${this.credentials.lastName}`.trim();
+          const nameRegex = /^[A-Za-z\s]+$/;   // letters + spaces only
+          return fullName.length > 0 && nameRegex.test(fullName);
+
+        },
+        checkoutPhoneValid() {
+          const phone = String(this.order.phoneNumber || "").trim();
+          const phoneRegex = /^[0-9]+$/;       // digits only
+          return phone.length > 0 && phoneRegex.test(phone);
+        },
+        isCheckoutEnabled() {
+          return this.cart.length > 0 && this.checkoutNameValid && this.checkoutPhoneValid;
+        },
+
       },
       watch: {
         cart: {
