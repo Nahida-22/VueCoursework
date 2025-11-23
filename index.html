@@ -471,7 +471,7 @@
 
       },
       created: function () {
-        fetch("http://localhost:3000/api/lessons").then(
+        fetch("https://express-js-app-spd3.onrender.com/api/lessons").then(
           function (response) {
             response.json().then(
               function (json) {
@@ -553,7 +553,7 @@
             return;
           }
           try {
-            const res = await fetch("http://localhost:3000/api/signup", {
+            const res = await fetch("https://express-js-app-spd3.onrender.com/api/signup", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -592,7 +592,7 @@
             return;
           }
           try {
-            const res = await fetch("http://localhost:3000/api/signin", {
+            const res = await fetch("https://express-js-app-spd3.onrender.com/api/signin", {
               method: "POST",
               headers: { "content-type": "application/json" },
               body: JSON.stringify({
@@ -693,7 +693,7 @@
             items
           };
           try {
-            const res = await fetch("http://localhost:3000/api/order", {
+            const res = await fetch("https://express-js-app-spd3.onrender.com/api/order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(data)
@@ -740,7 +740,7 @@
 
               console.log(`Updating ${lesson.topic}: ${currentSpaces} -> ${newSpace}`);
 
-              const res = await fetch(`http://localhost:3000/api/Courses/${lessonId}`, {
+              const res = await fetch(`https://express-js-app-spd3.onrender.com/api/Courses/${lessonId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -766,7 +766,7 @@
         async searchCourses() {
           try {
             const keyword = this.searchQuery.trim();
-            const res = await fetch(`http://localhost:3000/api/search?keyword=${encodeURIComponent(keyword)}`)
+            const res = await fetch(`https://express-js-app-spd3.onrender.com/api/search?keyword=${encodeURIComponent(keyword)}`)
             const data = await res.json();
             this.courses = data;
             console.log("Search results:", data);
