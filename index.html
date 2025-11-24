@@ -658,7 +658,7 @@
           const quantityInCart = inCart ? inCart.quantity : 0;
           return course.space - quantityInCart;
         },
-        methods: {
+      
           fullImage(imgPath) {
             if (!imgPath) return "";
             // If path is already absolute URL, return it
@@ -666,7 +666,7 @@
 
             // Otherwise, prefix with backend URL
             return `https://express-js-app-spd3.onrender.com/${imgPath}`;
-          }
+          
         },
 
 
