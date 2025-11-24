@@ -290,11 +290,17 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">First Name</label>
-              <input class="form-control" v-model.trim="credentials.firstName"/>
+              <input class="form-control" v-model.trim="credentials.firstName" />
             </div>
+            <small v-if="!checkoutNameValid && credentials.firstName" class="text-danger">
+              Name must contain letters and spaces only.
+            </small>
             <div class="col-md-6">
               <label class="form-label">Last Name</label>
-              <input class="form-control" v-model.trim="credentials.lastName"/>
+              <input class="form-control" v-model.trim="credentials.lastName" />
+              <small v-if="!checkoutNameValid && credentials.lastName" class="text-danger">
+                Name must contain letters and spaces only.
+              </small>
             </div>
             <div class="col-12">
               <label class="form-label">Phone Number</label>
@@ -488,7 +494,7 @@
         searchQuery: function (newVal) {
           if (newVal.length >= 2 || newVal.length === 0) {
             this.searchCourses();
-            
+
           }
         }
       },
@@ -650,7 +656,7 @@
         itemLeft(course) {
           const inCart = this.cart.find((item) => item.id === course.id);
           const quantityInCart = inCart ? inCart.quantity : 0;
-          return course.space- quantityInCart;
+          return course.space - quantityInCart;
         },
 
         cartCount(id) {
