@@ -183,7 +183,7 @@
       <div class="row">
         <div v-for="course in finalCourses" :key="course.id" class="col-md-6 mb-4">
           <div class="course-card p-3 shadow-sm">
-            <img :src="course.image" alt="Course Image" class="img-fluid mb-3" />
+            <img :src="fullImage(course.image)" alt="Course Image" class="img-fluid mb-3" />
             <h2>{{ course.topic }}</h2>
             <p>{{ course.description }}</p>
             <p><strong>Location:</strong> {{ course.location }}</p>
@@ -658,6 +658,17 @@
           const quantityInCart = inCart ? inCart.quantity : 0;
           return course.space - quantityInCart;
         },
+        methods: {
+          fullImage(imgPath) {
+            if (!imgPath) return "";
+            // If path is already absolute URL, return it
+            if (imgPath.startsWith("http")) return imgPath;
+
+            // Otherwise, prefix with backend URL
+            return `https://express-js-app-spd3.onrender.com/${imgPath}`;
+          }
+        },
+
 
         cartCount(id) {
           return this.cart.filter((c) => c === id).length;
