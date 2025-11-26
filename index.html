@@ -254,7 +254,7 @@
                 <td>{{ index + 1 }}</td>
 
                 <td>
-                  <img :src="item.image" alt="Course Image" class="img-thumbnail"
+                  <img :src="fullImage(item.image)" alt="Course Image" class="img-thumbnail"
                     style="width: 100px; height: 70px; object-fit: cover;" />
                 </td>
 
@@ -658,15 +658,15 @@
           const quantityInCart = inCart ? inCart.quantity : 0;
           return course.space - quantityInCart;
         },
-      
-          fullImage(imgPath) {
-            if (!imgPath) return "";
-            // If path is already absolute URL, return it
-            if (imgPath.startsWith("http")) return imgPath;
 
-            // Otherwise, prefix with backend URL
-            return `https://express-js-app-spd3.onrender.com/${imgPath}`;
-          
+        fullImage(imgPath) {
+          if (!imgPath) return "";
+          // If path is already absolute URL, return it
+          if (imgPath.startsWith("http")) return imgPath;
+
+          // Otherwise, prefix with backend URL
+          return `https://express-js-app-spd3.onrender.com/${imgPath}`;
+
         },
 
 
