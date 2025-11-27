@@ -186,6 +186,8 @@
             <p>{{ course.description }}</p>
             <p><strong>Location:</strong> {{ course.location }}</p>
             <p><strong>Price:</strong> ${{ course.price }}</p>
+            <p><strong>Spaces:</strong> {{ itemLeft(course) }}</p>
+
             <button class="btn btn-success w-100" v-on:click="addItemToCart(course)" :disabled="itemLeft(course) === 0">
               <i class="fa-solid fa-cart-plus"></i> Add To Cart
             </button>
@@ -642,7 +644,7 @@
         addItemToCart(course) {
           if (!this.isSignedIn) {
             this.pendingAdd = course;
-            this.showSigninModal = true;   // open modal via Vue only
+            this.showSigninModal = true;   //open modal via Vue only
             return;
           }
           this._addItemToCartInternal(course);
